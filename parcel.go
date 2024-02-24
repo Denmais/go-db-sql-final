@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 )
 
 type ParcelStore struct {
@@ -46,20 +45,20 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	// здесь из таблицы может вернуться несколько строк
 	rows, err := s.db.Query("SELECT * FROM parcel WHERE client = :client", sql.Named("client", client))
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
-	// заполните срез Parcel данными из таблицы
 	var res []Parcel
 	for rows.Next() {
 		row := Parcel{}
 		err := rows.Scan(&row.Number, &row.Client, &row.Status, &row.Address, &row.CreatedAt)
 		if err != nil {
-			log.Println(err)
 			return nil, err
 		}
 		res = append(res, row)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 	return res, nil
 }

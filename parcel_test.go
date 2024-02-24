@@ -42,12 +42,12 @@ func TestAddGetDelete(t *testing.T) {
 	// Проверка на отсутствие ошибки при добавлении, наличие идентификатора
 	id, err := store.Add(parcel)
 	require.NoError(t, err)
-	require.NotEmpty(t, id)
+	assert.Greater(t, id, 0)
 	// get
 	// ПРоверка на отсутствие ошибок, соответствие полей добавленной посылки
 	parc, err := store.Get(id)
 	require.NoError(t, err)
-	parc.Number = 0
+	parcel.Number = id
 	assert.Equal(t, parcel, parc)
 
 	// delete
@@ -70,7 +70,7 @@ func TestSetAddress(t *testing.T) {
 	// Проверка на отсутствие ошибки при добавлении, наличие идентификатора
 	id, err := store.Add(parcel)
 	require.NoError(t, err)
-	require.NotEmpty(t, id)
+	assert.Greater(t, id, 0)
 	// set address
 	// Проверка на отсутствие ошибки при обновлении адреса
 	newAddress := "new test address"
@@ -97,7 +97,7 @@ func TestSetStatus(t *testing.T) {
 	// Проверка на отсутствие ошибки при добавлении, наличие идентификатора
 	id, err := store.Add(parcel)
 	require.NoError(t, err)
-	require.NotEmpty(t, id)
+	assert.Greater(t, id, 0)
 	// set status
 	// Проверка на отсутствие ошибки при обновлении статуса
 	newStatus := ParcelStatusSent
@@ -136,7 +136,7 @@ func TestGetByClient(t *testing.T) {
 		getTestParcel(),
 		getTestParcel(),
 	}
-	parcelMap := map[int]Parcel{}
+	//	parcelMap := map[int]Parcel{}
 
 	client := randRange.Intn(10_000_000)
 	parcels[0].Client = client
@@ -147,22 +147,18 @@ func TestGetByClient(t *testing.T) {
 	for i := 0; i < len(parcels); i++ {
 		id, err := store.Add(parcels[i]) // Проверка на отсутствие ошибки при добавлении, наличие идентификатора
 		require.NoError(t, err)
-		require.NotEmpty(t, id)
+		assert.Greater(t, id, 0)
 		parcels[i].Number = id
 
-		parcelMap[id] = parcels[i]
 	}
 
 	// get by client
 	storedParcels, err := store.GetByClient(client)
 	// Проверка на остутствие ошибок и количество добавленных записей
-	parcelsLen := len(parcels)
 	require.NoError(t, err)
-	assert.Len(t, storedParcels, parcelsLen)
+	assert.Len(t, storedParcels, len(parcels))
 
 	// check
-	for _, parcel := range storedParcels {
-		// Проверка на наличие и соответствие добавленной записи тестовой
-		assert.Equal(t, parcelMap[parcel.Number], parcel)
-	}
+	// Проверка добавленных элементов
+	assert.ElementsMatch(t, storedParcels, parcels)
 }
